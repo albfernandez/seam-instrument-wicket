@@ -69,6 +69,23 @@ public class InstrumentationMojo extends AbstractMojo
    }
 
    /**
+    * Whether to only instrument classes annotated with @SeamWicketComponent
+    * @parameter alias="scanAnnotations"
+    */
+   private boolean scanAnnotations = false;
+   
+   public boolean isScanAnnotations()
+   {
+      return scanAnnotations;
+   }
+
+   public void setScanAnnotations(boolean scanAnnotations)
+   {
+      this.scanAnnotations = scanAnnotations;
+   }
+
+
+   /**
     * @parameter default-value="${project.runtimeClasspathElements}"
     * @readonly
     */
@@ -121,7 +138,7 @@ public class InstrumentationMojo extends AbstractMojo
 
          Map<String, CtClass> instrumentedClasses = new HashMap<String, CtClass>();
 
-         JavassistInstrumentor instrumentor = new JavassistInstrumentor(classPool);
+         JavassistInstrumentor instrumentor = new JavassistInstrumentor(classPool, scanAnnotations);
 
          List<String> classes = new ArrayList<String>();
          visitDir(classesDirectory, classes);
