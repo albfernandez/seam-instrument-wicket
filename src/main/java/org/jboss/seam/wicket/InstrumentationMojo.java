@@ -3,8 +3,10 @@ package org.jboss.seam.wicket;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javassist.ClassPool;
@@ -20,7 +22,7 @@ import org.jboss.seam.wicket.ioc.JavassistInstrumentor;
  * This mojo takes classes specified with the "includes" parameter in the plugin configuration
  * and instruments them with Seam's Wicket JavassistInstrumentor.
  * @goal instrument
- * @requiresDependencyResolution
+ * @requiresDependencyResolution compile
  * @phase process-classes
  */
 public class InstrumentationMojo extends AbstractMojo
@@ -140,18 +142,11 @@ public class InstrumentationMojo extends AbstractMojo
 
          JavassistInstrumentor instrumentor = new JavassistInstrumentor(classPool, scanAnnotations);
 
-         List<String> classes = new ArrayList<String>();
+         Set<String> classes = new HashSet<String>();
          visitDir(classesDirectory, classes);
 
-         for (String path : classes)
-         {
-            instrumentedClasses.put(path, instrumentor.instrumentClass(filenameToClassname(path)));
-         }
-         for (Map.Entry<String, CtClass> entry : instrumentedClasses.entrySet())
-         {
-            if (entry.getValue().isModified())
-               entry.getValue().writeFile(classesDirectory.getPath());
-         }
+         
+         instrumentor.instrumentClassSet(classes, classesDirectory.getPath());
       }
       catch (Exception e)
       {
@@ -160,7 +155,7 @@ public class InstrumentationMojo extends AbstractMojo
       }
    }
 
-   private void visitDir(File classesDir, List<String> classes)
+   private void visitDir(File classesDir, Set<String> classes)
    {
       for (File file : classesDir.listFiles())
       {
@@ -170,7 +165,7 @@ public class InstrumentationMojo extends AbstractMojo
             {
                if (pat.matcher(file.getPath()).find())
                {
-                  classes.add(file.getPath());
+                  classes.add(filenameToClassname(file.getPath()));
                   break;
                }
             }
